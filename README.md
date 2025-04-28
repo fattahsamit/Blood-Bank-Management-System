@@ -78,7 +78,10 @@ The `donors` table contains the following fields:
 
 ## Screenshots
 
-_Add screenshots of the application here._
+![GUI](https://github.com/user-attachments/assets/8da9f395-0736-4e77-b5f8-050a142202cf)
+![GUI Select](https://github.com/user-attachments/assets/deee4a88-c311-4c34-86fd-4e9d7ec2daaa)
+![GUI Search](https://github.com/user-attachments/assets/fab7a400-9008-4145-80be-099da570eaa1)
+
 
 ## License
 
