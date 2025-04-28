@@ -1,17 +1,7 @@
 #Tkinter is the standard GUI library for Python
 from tkinter import *
 from tkinter import ttk
-import psycopg2
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
-
-def get_db_password():
-    """Get database password from environment variable"""
-    return os.environ.get('DB_PASSWORD', '')
-    
+import pymysql
 
 #class creation
 class Donor:
@@ -157,7 +147,7 @@ class Donor:
         
         combo_search=ttk.Combobox(Detail_Frame,textvariable=self.search_by,width=13,font=("arial",14,"bold"),state="readonly")
     #name must be same as the database
-        combo_search['values']=("blood_group","last_donation","address","number")
+        combo_search['values']=("Blood_Group","Last_Donation","Address","Number")
         combo_search.grid(row=0,column=1,pady=5,padx=10)
         
         txt_search=Entry(Detail_Frame,textvariable=self.search_txt,width=25,font=("arial",13,"bold"),bd=5,relief=GROOVE)
@@ -178,7 +168,6 @@ class Donor:
         scroll_y.pack(side=RIGHT,fill=Y)
         scroll_x.config(command=self.Donor_table.xview)
         scroll_y.config(command=self.Donor_table.yview)
-
         self.Donor_table.heading("id",text="ID No.")
         self.Donor_table.heading("name",text="Name")
         self.Donor_table.heading("gender",text="Gender")
@@ -189,10 +178,8 @@ class Donor:
         self.Donor_table.heading("ail",text="Ailments")
         self.Donor_table.heading("lastdn",text="Last Donation")
         self.Donor_table.heading("address",text="Address")
-
         #only show the ones with headings
         self.Donor_table["show"]="headings"
-
         #setting the column
         self.Donor_table.column("id",width=45)
         self.Donor_table.column("name",width=100)
@@ -206,16 +193,14 @@ class Donor:
         self.Donor_table.column("address",width=130)
         #filled the table and expanded it for it cover the whole table
         self.Donor_table.pack(fill=BOTH,expand=1)
-
         #button event
         self.Donor_table.bind("<ButtonRelease-1>",self.get_cursor)
-
         #to show the table from the database
         self.fetch_data()
         
     def add_donors(self):
         #connection with database #database name=bdms
-        con=psycopg2.connect(host="localhost",user="postgres",password=get_db_password(),database="bdms")
+        con=pymysql.connect(host="localhost",user="root",password="",database="bdms")
         #cursor function is used to execute queries
         cur=con.cursor()
         #sql queries, Table name=donors, Used a tuple to store into variables, get() for accessing
@@ -239,9 +224,9 @@ class Donor:
         con.close()
         
     def fetch_data(self):
-        con=psycopg2.connect(host="localhost",user="postgres",password=get_db_password(),database="bdms")
+        con=pymysql.connect(host="localhost",user="root",password="",database="bdms")
         cur=con.cursor()
-        cur.execute("SELECT * FROM donors")
+        cur.execute("select * from donors")
         #save all data into a variabble that will be fetched
         rows=cur.fetchall()
         #delete empty rows and their children
@@ -284,10 +269,10 @@ class Donor:
         self.address_var.set(row[9])
         
     def update_data(self):
-        con=psycopg2.connect(host="localhost",user="postgres",password=get_db_password(),database="bdms")
+        con=pymysql.connect(host="localhost",user="root",password="",database="bdms")
         cur=con.cursor()
     #name must be same as the database
-        cur.execute("UPDATE donors SET name=%s,gender=%s,blood_group=%s,number=%s,email=%s,dob=%s,ailment=%s,last_donation=%s,address=%s where id=%s",(
+        cur.execute("update donors set name=%s,gender=%s,blood_group=%s,number=%s,email=%s,dob=%s,ailment=%s,last_donation=%s,address=%s where id=%s",(
                                                                                                             self.name_var.get(),
                                                                                                             self.gender_var.get(),
                                                                                                             self.bg_var.get(),
@@ -305,27 +290,23 @@ class Donor:
         con.close()
         
     def delete_data(self):
-        con=psycopg2.connect(host="localhost",user="postgres",password=get_db_password(),database="bdms")
+        con=pymysql.connect(host="localhost",user="root",password="",database="bdms")
         cur=con.cursor()
-        cur.execute("DELETE FROM donors WHERE id=%s",(self.id_var.get(),))
+        cur.execute("delete from donors where id=%s",self.id_var.get())
         con.commit()
         con.close()
         self.fetch_data()
         self.clear()
         
     def search_data(self):
-        con=psycopg2.connect(host="localhost",user="postgres",password=get_db_password(),database="bdms")
+        con=pymysql.connect(host="localhost",user="root",password="",database="bdms")
         cur=con.cursor()
-
-        search_field = str(self.search_by.get()).lower()
-        search_text = str(self.search_txt.get())
-
-       #cur.execute("SELECT * from donors where " +str(self.search_by.get())+" LIKE '"+str(self.search_txt.get())+"%'")
-       #cur.execute("SELECT * from donors where " +str(self.search_by.get())+" LIKE '%"+str(self.search_txt.get())+"%'")        
-        if search_field == "blood_group":
-            cur.execute("SELECT * FROM donors WHERE blood_group LIKE %s", (search_text + '%',))
+       #cur.execute("select * from donors where " +str(self.search_by.get())+" LIKE '"+str(self.search_txt.get())+"%'")
+       #cur.execute("select * from donors where " +str(self.search_by.get())+" LIKE '%"+str(self.search_txt.get())+"%'")        
+        if str(self.search_by.get())=="Blood_Group":
+            cur.execute("select * from donors where " +str(self.search_by.get())+" LIKE '"+str(self.search_txt.get())+"%'")
         else:
-            cur.execute(f"SELECT * FROM donors WHERE {search_field} LIKE %s", ('%' + search_text + '%',))
+            cur.execute("select * from donors where " +str(self.search_by.get())+" LIKE '%"+str(self.search_txt.get())+"%'")
 
         rows=cur.fetchall()
         if len(rows)!=0:
